@@ -1,11 +1,11 @@
-import { Outlet } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 
 export const AuthProvderEffect = () => {
-  const user = false;
+  const user = true;
 
   if (user) {
     return <Outlet />;
   }
 
-  return <div>login</div>;
+  return <Navigate to={"admin/login"} />;
 };

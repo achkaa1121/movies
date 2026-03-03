@@ -24,6 +24,7 @@ const App = () => (
 
         <Route path="admin" element={<AdminLayout />}>
           <Route path="login" element={<Login />} />
+
           <Route element={<AuthProviderEffect />}>
             <Route path="create-movie" element={<div>create-movie</div>} />
             <Route path="get-comments" element={<div>get-movies</div>} />

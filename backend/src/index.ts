@@ -4,11 +4,16 @@ import cors from "cors";
 import mongoose from "mongoose";
 import moviesRouter from "./routes/movies";
 import authRouter from "./auth/routes/auth";
+import Movie from "./models/Movie";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.MONGODB_URI || "";
-
+const rateds = async () => {
+  const ratings = await Movie.find().distinct("rated");
+  console.log(ratings);
+};
+rateds();
 app.use(cors());
 app.use(express.json());
 

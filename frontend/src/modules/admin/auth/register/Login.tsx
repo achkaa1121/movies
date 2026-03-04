@@ -1,4 +1,4 @@
-import { Link, Navigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "../useAuthContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -15,73 +15,78 @@ const userFormSchema = z.object({
 });
 
 export const Login = () => {
-  const { user } = useAuth();
-  const { mutate } = useLogin();
+  const { user, login } = useAuth();
+  const { mutate, isPending, error } = useLogin();
   const form = useForm<z.infer<typeof userFormSchema>>({
     resolver: zodResolver(userFormSchema),
     defaultValues: {
-      email: "example@gmail.com",
+      email: "admin@gmail.com",
       password: ""
     }
   });
 
   if (user) {
-    return <Navigate to={"/admin/create-movie"} />;
+    return <Navigate to={"/admin/movies"} />;
   }
 
   const onSubmit: SubmitHandler<z.infer<typeof userFormSchema>> = data => {
-    mutate(data);
+    mutate(data, {
+      onSuccess: response => {
+        login(response.data.token);
+      }
+    });
   };
 
   return (
-    <div className="max-auto">
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <Controller
-          name="email"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor={field.name}>Bug Title</FieldLabel>
-              <Input
-                {...field}
-                id={field.name}
-                aria-invalid={fieldState.invalid}
-                placeholder="Enter your email"
-              />
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-            </Field>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm">
+        <h1 className="text-2xl font-bold mb-6 text-center">Admin Login</h1>
+
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <Controller
+            name="email"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor={field.name}>Email</FieldLabel>
+                <Input
+                  {...field}
+                  id={field.name}
+                  aria-invalid={fieldState.invalid}
+                  placeholder="Enter your email"
+                />
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+              </Field>
+            )}
+          />
+
+          <Controller
+            name="password"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor={field.name}>Password</FieldLabel>
+                <Input
+                  {...field}
+                  id={field.name}
+                  aria-invalid={fieldState.invalid}
+                  placeholder="Enter your password"
+                  type="password"
+                />
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+              </Field>
+            )}
+          />
+
+          {error && (
+            <p className="text-red-500 text-sm">Invalid email or password</p>
           )}
-        />
 
-        <Controller
-          name="password"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor={field.name}>Bug Title</FieldLabel>
-              <Input
-                {...field}
-                id={field.name}
-                aria-invalid={fieldState.invalid}
-                placeholder="password"
-                type="password"
-              />
-
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-            </Field>
-          )}
-        />
-        {/* <Input type="email" {...register("email")} />
-
-        <Input type="password" {...register("password")} />
-        {errors.password && <p>{errors.password.message}</p>} */}
-        <Button type="submit" variant={"outline"}>
-          Login
-        </Button>
-        <Link to="/admin/signup">
-          <Button variant={"outline"}>Sign Up</Button>
-        </Link>
-      </form>
+          <Button type="submit" className="w-full" disabled={isPending}>
+            {isPending ? "Logging in..." : "Login"}
+          </Button>
+        </form>
+      </div>
     </div>
   );
 };

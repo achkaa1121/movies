@@ -14,6 +14,11 @@ export const meController = async (
 };
 
 export const login = async (req: Request, res: Response): Promise<void> => {
-  console.log(req.body);
-  res.send("success");
+  const { email, password } = req.body;
+
+  if (email === "admin@gmail.com" && password === "pass123") {
+    res.json({ token: "admin-token" });
+  } else {
+    res.status(401).json({ message: "Invalid credentials" });
+  }
 };

@@ -13,10 +13,10 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
 
   const { data, isLoading } = useUser(!!token);
 
-  const login = () => {
-    localStorage.setItem("auth-token", "1");
-    setToken("1");
-    navigate("/admin/create-movie");
+  const login = (token: string) => {
+    localStorage.setItem("auth-token", token);
+    setToken(token);
+    navigate("/admin/movies");
   };
 
   const logout = () => {

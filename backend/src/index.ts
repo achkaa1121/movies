@@ -10,7 +10,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.MONGODB_URI || "";
 const rateds = async () => {
-  const ratings = await Movie.find().distinct("rated");
+  const ratings = await Movie.find().distinct("genres");
   console.log(ratings);
 };
 rateds();

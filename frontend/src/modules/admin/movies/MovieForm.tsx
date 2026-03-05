@@ -1,49 +1,63 @@
 import { Button } from "@/components/ui/button";
-import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, type SubmitHandler } from "react-hook-form";
-import {
-  Field,
-  FieldContent,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  FieldLegend,
-  FieldSeparator,
-  FieldSet,
-  FieldTitle,
-} from "@/components/ui/field";
+import { Controller, useForm, type SubmitHandler } from "react-hook-form";
+import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Select, SelectItem } from "@/components/ui/select";
 import {
-  SelectContent,
+  Select,
+  SelectItem,
   SelectTrigger,
+  SelectContent,
   SelectValue,
-} from "@radix-ui/react-select";
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 interface MovieFormProps {
   submitLabel: string;
 }
-
 export const MovieForm = ({ submitLabel }: MovieFormProps) => {
+  const genres = [
+    "Action",
+    "Adventure",
+    "Animation",
+    "Biography",
+    "Comedy",
+    "Crime",
+    "Documentary",
+    "Drama",
+    "Family",
+    "Fantasy",
+    "Film-Noir",
+    "History",
+    "Horror",
+    "Music",
+    "Musical",
+    "Mystery",
+    "News",
+    "Romance",
+    "Sci-Fi",
+    "Short",
+    "Sport",
+    "Talk-Show",
+    "Thriller",
+    "War",
+    "Western",
+  ];
   const movieFormSchema = z.object({
-    title: z.string().max(1),
-    year: z.number(),
-    rated: z.string(),
-    runtime: z.number(),
+    title: z.string().max(100),
+    year: z.number().int().min(1827).max(2026),
     genres: z.array(z.string()),
-    directors: z.array(z.string()),
-    cast: z.array(z.string()),
-    writers: z.array(z.string()),
-    plot: z.string(),
-    fullplot: z.string(),
-    poster: z.string(),
+    rating: z.number().min(0).max(10),
   });
-  const { handleSubmit, register } = useForm<z.infer<typeof movieFormSchema>>({
+  const { handleSubmit, register, control } = useForm<
+    z.infer<typeof movieFormSchema>
+  >({
     resolver: zodResolver(movieFormSchema),
     defaultValues: {
       title: "",
+      year: 2026,
+      genres: [],
+      rating: 0,
     },
   });
   const onSubmit: SubmitHandler<z.infer<typeof movieFormSchema>> = (data) => {
@@ -52,37 +66,86 @@ export const MovieForm = ({ submitLabel }: MovieFormProps) => {
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 200 }, (_, i) => currentYear - i);
   return (
-    <div className="w-full ">
-      <Select>
-        <SelectTrigger>
-          <SelectValue placeholder="Released Year" />
-        </SelectTrigger>
-        <SelectContent className=" bg-slate-400 ">
-          {years.map((year) => (
-            <SelectItem value={year.toString()} className="w-7">
-              {year}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      <form className="" onSubmit={handleSubmit(onSubmit)}>
+    <div>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <FieldSet>
           <FieldGroup>
             <Field>
               <FieldLabel>Title</FieldLabel>
-              <Input placeholder="Enter Title Here" />
+              <Input placeholder="Enter Title Here" {...register("title")} />
             </Field>
             <Field>
               <FieldLabel>Released Year</FieldLabel>
+              <Controller
+                control={control}
+                name="year"
+                render={({ field }) => (
+                  <Select
+                    value={field.value?.toString()}
+                    onValueChange={(value) => field.onChange(Number(value))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Released Year" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {years.map((year) => (
+                        <SelectItem key={year} value={year.toString()}>
+                          {year}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </Field>
-            <Field orientation="horizontal">
-              <FieldLabel htmlFor="newsletter">
-                Subscribe to the newsletter
-              </FieldLabel>
+            <Field>
+              <FieldLabel>Genres</FieldLabel>
+              <Controller
+                control={control}
+                name="genres"
+                render={({ field }) => (
+                  <div className="grid grid-cols-2 gap-1">
+                    {genres.map((genre) => {
+                      const checked = field.value?.includes(genre);
+                      return (
+                        <div
+                          key={genre}
+                          className="flex items-center space-x-2"
+                        >
+                          <Checkbox
+                            checked={checked}
+                            onCheckedChange={(isChecked) => {
+                              if (isChecked) {
+                                field.onChange([...field.value, genre]);
+                              } else {
+                                field.onChange(
+                                  field.value.filter((g) => g !== genre),
+                                );
+                              }
+                            }}
+                          />
+                          <label className="text-sm font-medium">{genre}</label>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              />
+            </Field>
+            <Field>
+              <FieldLabel>Rating</FieldLabel>
+              <Input
+                type="number"
+                max={10}
+                min={0}
+                step={0.1}
+                placeholder="IMDB Rating"
+                {...register("rating", { valueAsNumber: true })}
+              />
             </Field>
           </FieldGroup>
         </FieldSet>
-        <Button type="submit" className="w-full">
+        <Button type="submit" className="w-full mt-4">
           {submitLabel}
         </Button>
       </form>

@@ -1,5 +1,5 @@
-import { MovieForm } from "./MovieForm";
+import { MovieForm, type MovieFormProps } from "./MovieForm";
 
-export const EditMovieForm = () => {
-  return <MovieForm submitLabel="Save Changes" />;
+export const EditMovieForm = ({ id }: MovieFormProps) => {
+  return <MovieForm submitLabel="Save Changes" id={id} />;
 };

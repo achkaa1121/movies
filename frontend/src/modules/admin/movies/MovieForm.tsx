@@ -11,11 +11,28 @@ import {
   SelectContent,
   SelectValue,
 } from "@/components/ui/select";
+import { useCreateMovie } from "../auth/hooks/useCreateMovie";
+import { useEditMovie } from "../auth/hooks/useEditMovie";
 import { Checkbox } from "@/components/ui/checkbox";
-interface MovieFormProps {
-  submitLabel: string;
+import { useGetMovieID } from "../auth/hooks/useGetMovieID";
+import { useEffect } from "react";
+export interface MovieFormProps {
+  submitLabel?: string;
+  id?: string;
 }
-export const MovieForm = ({ submitLabel }: MovieFormProps) => {
+export interface IMovieForm {
+  title: string;
+  year: number;
+  genres: string[];
+  rating: number;
+}
+export const MovieForm = ({ submitLabel, id }: MovieFormProps) => {
+  const movieFormSchema = z.object({
+    title: z.string().max(100),
+    year: z.number().int().min(1827).max(2026),
+    genres: z.array(z.string()),
+    rating: z.number().min(0).max(10),
+  });
   const genres = [
     "Action",
     "Adventure",
@@ -43,13 +60,9 @@ export const MovieForm = ({ submitLabel }: MovieFormProps) => {
     "War",
     "Western",
   ];
-  const movieFormSchema = z.object({
-    title: z.string().max(100),
-    year: z.number().int().min(1827).max(2026),
-    genres: z.array(z.string()),
-    rating: z.number().min(0).max(10),
-  });
-  const { handleSubmit, register, control } = useForm<
+  const { mutate: createMovie } = useCreateMovie();
+  const { mutate: editMovie } = useEditMovie();
+  const { handleSubmit, register, control, reset } = useForm<
     z.infer<typeof movieFormSchema>
   >({
     resolver: zodResolver(movieFormSchema),
@@ -60,14 +73,24 @@ export const MovieForm = ({ submitLabel }: MovieFormProps) => {
       rating: 0,
     },
   });
+  const { data } = useGetMovieID(id!);
+  useEffect(() => {
+    if (data) {
+      reset(data);
+    }
+  }, [data, reset]);
   const onSubmit: SubmitHandler<z.infer<typeof movieFormSchema>> = (data) => {
-    console.log(data);
+    if (data) {
+      editMovie(data);
+    } else {
+      createMovie(data);
+    }
   };
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 200 }, (_, i) => currentYear - i);
   return (
     <div>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit, (error) => console.log(error))}>
         <FieldSet>
           <FieldGroup>
             <Field>

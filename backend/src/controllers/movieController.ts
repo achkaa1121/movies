@@ -22,9 +22,9 @@ export const getMovies = async (req: Request, res: Response): Promise<void> => {
         .skip(skip)
         .limit(limit)
         .select(
-          "title year runtime genres directors cast plot poster rated imdb awards type"
+          "title year runtime genres directors cast plot poster rated imdb awards type",
         ),
-      Movie.countDocuments(filter)
+      Movie.countDocuments(filter),
     ]);
 
     res.json({
@@ -32,7 +32,7 @@ export const getMovies = async (req: Request, res: Response): Promise<void> => {
       limit,
       total,
       totalPages: Math.ceil(total / limit),
-      movies
+      movies,
     });
   } catch (err) {
     console.error(err);
@@ -42,11 +42,15 @@ export const getMovies = async (req: Request, res: Response): Promise<void> => {
 
 export const getMovieById = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
-    const movie = await Movie.findById(req.params.id);
-
+    const movie = await Movie.findById(req.params.id, {
+      title: 1,
+      rating: 1,
+      year: 1,
+      genres: 1,
+    });
     if (!movie) {
       res.status(404).json({ message: "Movie not found" });
       return;
@@ -57,4 +61,17 @@ export const getMovieById = async (
     console.error(err);
     res.status(500).json({ message: "Server error" });
   }
+};
+export const createMovie = async (req: Request, res: Response) => {
+  const { title, year, genres, rating } = req.body.data;
+  console.log(req.body);
+  try {
+    const movie = await Movie.create({ title, year, genres, rating });
+    res.json(movie);
+  } catch (e) {
+    res.json({ message: `Failed to create movie ${e}` });
+  }
+};
+export const editMovie = async (req: Request, res: Response) => {
+  const { title, year, genres, rating } = req.body.data;
 };
